@@ -1,0 +1,16 @@
+model Car {
+  id         String   @id @default(uuid())
+  externalId String   @unique @map("external_id")
+  brand      String
+  model      String
+  year       Int
+  mileage    Int
+  price      Float
+  currency   String   @default("JPY")
+  images     String[]
+  sourceUrl  String   @map("source_url")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("cars")
+}

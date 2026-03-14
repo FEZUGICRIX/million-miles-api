@@ -1,0 +1,9 @@
+model ScrapeLog {
+  id           String   @id @default(uuid())
+  status       String
+  carsFound    Int      @map("cars_found")
+  errorMessage String?  @map("error_message")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("scrape_logs")
+}
