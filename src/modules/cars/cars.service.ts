@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from '@/core/prisma/prisma.service'
 import { GetCarsQueryDto, SortOption } from './dto'
 import { PaginatedResponse } from './interfaces/paginated-response.interface'
-import { Car } from '@prisma/client'
+import { Car } from '@prisma/generated'
 
 @Injectable()
 export class CarsService {
