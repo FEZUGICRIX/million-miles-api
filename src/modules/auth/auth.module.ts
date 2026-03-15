@@ -11,7 +11,7 @@ import { PrismaModule } from '../../core/prisma/prisma.module'
 	imports: [
 		PrismaModule,
 		PassportModule,
-		JwtModule.registerAsync({ // TODO: возможно вынести в core/config
+		JwtModule.registerAsync({
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
 				secret: configService.get<string>('JWT_SECRET'),

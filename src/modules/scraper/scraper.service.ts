@@ -49,8 +49,8 @@ export class ScraperService {
 			// Wait for content to load
 			await page.waitForTimeout(2000)
 
-			// Extract car listings
-			const cars = await page.$$eval('.cassetteMain', elements => {
+			// Extract car listings - using $$eval to get all car cards
+			const cars = await page.$$eval('.cassetteWrap', elements => {
 				return elements.map(el => {
 					// Extract external ID from URL
 					const linkElement = el.querySelector('a')
@@ -118,10 +118,21 @@ export class ScraperService {
 
 			this.logger.log(`Found ${cars.length} cars`)
 
-			// Log first car for debugging
-			if (cars.length > 0) {
-				this.logger.debug(`First car sample: ${JSON.stringify(cars[0])}`)
+			// Validate results - check if scraping failed
+			if (cars.length === 0) {
+				this.logger.warn('No cars found - possible site structure change')
+				throw new Error('No cars extracted - check selectors')
 			}
+
+			// Validate first car data structure
+			const firstCar = cars[0]
+			if (!firstCar.externalId || !firstCar.brand || !firstCar.model) {
+				this.logger.error('Invalid car data structure', firstCar)
+				throw new Error('Car data validation failed - missing required fields')
+			}
+
+			// Log first car for debugging
+			this.logger.debug(`First car sample: ${JSON.stringify(firstCar)}`)
 
 			// Process and upsert each car
 			for (const car of cars) {
@@ -130,11 +141,14 @@ export class ScraperService {
 				const price = this.translationService.normalizePrice(car.priceText)
 				const year = this.translationService.normalizeNumber(car.yearText)
 				const mileage = this.translationService.normalizeNumber(car.mileageText)
+				const translatedBrand = this.translationService.translateBrand(
+					car.brand,
+				)
 
 				await this.prismaService.car.upsert({
 					where: { externalId: car.externalId },
 					update: {
-						brand: car.brand,
+						brand: translatedBrand,
 						model: car.model,
 						year,
 						mileage,
@@ -145,7 +159,7 @@ export class ScraperService {
 					},
 					create: {
 						externalId: car.externalId,
-						brand: car.brand,
+						brand: translatedBrand,
 						model: car.model,
 						year,
 						mileage,
